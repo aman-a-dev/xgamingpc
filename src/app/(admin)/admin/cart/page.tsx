@@ -24,7 +24,7 @@ import { toast } from "@/components/ui/toast";
 import { Loader2, ShoppingCart, User, Copy, Check } from "lucide-react";
 import { SearchBar } from "@/components/blocks/search";
 
-// Inner component that uses useSearchParams
+
 function CartsContent() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
