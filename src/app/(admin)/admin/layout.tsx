@@ -17,10 +17,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  /*const session = await getSession();
+  const session = await getSession();
   if (!session || session.role !== "ADMIN") {
     redirect("/");
-  }*/
+  }
   return (
     <TooltipProvider>
       <SidebarProvider>
