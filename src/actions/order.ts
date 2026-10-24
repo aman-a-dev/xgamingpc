@@ -79,15 +79,15 @@ export async function placeOrder(input: {
       return { success: false, error: "This receipt has already been used for another order." };
     }
 
-    const receiverName = (verifyResult.data.receipt.receiver_name || "").toLowerCase();
+    /*const receiverName = (verifyResult.data.receipt.receiver_name || "").toLowerCase();
     if (!receiverName.includes("amanuel")) {
       return { success: false, error: "Verification failed: Receiver name must be 'Amanuel'." };
-    }
+    }*/
 
     const paidAmount = Number(verifyResult.data.receipt.amount);
-    if (Math.abs(paidAmount - calculatedTotal) > 0.01) {
-      return { success: false, error: `Amount mismatch. Expected ${calculatedTotal} ETB, but receipt shows ${paidAmount} ETB.` };
-    }
+    /* if (Math.abs(paidAmount - calculatedTotal) > 0.01) {
+       return { success: false, error: `Amount mismatch. Expected ${calculatedTotal} ETB, but receipt shows ${paidAmount} ETB.` };
+     }*/
 
     // 4. Database Transaction: Create Receipt, Order, OrderItems, and Clear Cart
     await prisma.$transaction(async (tx) => {
