@@ -122,7 +122,7 @@ export function CheckoutDialog({ isOpen, onOpenChange, totalAmount }: CheckoutDi
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="TELEBIRR">Telebirr</SelectItem>
-                <SelectItem value="CBE">Commercial Bank of Ethiopia (CBE)</SelectItem>
+                <SelectItem value="CBE">CBE</SelectItem>
               </SelectContent>
             </Select>
           </div>
