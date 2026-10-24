@@ -7,7 +7,7 @@ import { del } from "@vercel/blob";
 import prisma from "@/lib/prisma";
 import type { ProductModel as Product } from "@/generated/prisma/models/Product";
 import type { UserModel as User } from "@/generated/prisma/models/User";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, $Enums } from "@/generated/prisma/client";
 import type { ActionResult } from "./products";
 import {
   createProductSchema,
@@ -19,6 +19,8 @@ import {
   type CreateUserInput,
   type UpdateUserInput,
 } from "@/lib/schemas";
+import { getSession } from "@/lib/session";
+import { redirect } from "next/navigation";
 
 function formatZodError(error: z.ZodError): string {
   return error.issues
@@ -225,5 +227,146 @@ export async function getUsers(query?: string): Promise<ActionResult<User[]>> {
   } catch (error) {
     console.error("getUsers error:", error);
     return { success: false, error: "Failed to fetch users" };
+  }
+}
+
+
+// ---------------------
+// ... (after your existing user actions)
+
+async function requireAdmin() {
+  const session = await getSession();
+  if (!session || session.role !== "ADMIN") {
+    redirect("/");
+  }
+  return session.userId;
+}
+
+// ─── ADMIN ORDER TYPES & ACTIONS ───────────────────────────────
+// ...
+// ─── ADMIN ORDER TYPES & ACTIONS ───────────────────────────────
+
+export type AdminOrder = {
+  id: number;
+  total: number;
+  status: string;
+  createdAt: string;
+  user: { id: number; name: string; telegramId: string | null };
+  receipt: {
+    id: number;
+    reference: string;
+    bank: string;
+    amount: number;
+    status: string;
+    payerName: string | null;
+  } | null;
+  items: {
+    id: number;
+    quantity: number;
+    price: number;
+    product: { name: string };
+  }[];
+};
+
+export async function getAdminOrders(query?: string): Promise<ActionResult<AdminOrder[]>> {
+  try {
+    await requireAdmin();
+    const whereClause: any = {};
+    if (query) {
+      const isNumeric = !isNaN(Number(query));
+      whereClause.OR = [
+        { user: { name: { contains: query, mode: "insensitive" } } },
+        { user: { telegramId: { contains: query, mode: "insensitive" } } },
+        ...(isNumeric ? [{ id: Number(query) }] : []),
+      ];
+    }
+
+    const orders = await prisma.order.findMany({
+      where: whereClause,
+      include: {
+        user: { select: { id: true, name: true, telegramId: true } },
+        receipt: { select: { id: true, reference: true, bank: true, amount: true, status: true, payerName: true } },
+        items: { include: { product: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const serialized = orders.map((order) => ({
+      ...order,
+      total: Number(order.total),
+      createdAt: order.createdAt.toISOString(),
+      receipt: order.receipt ? { ...order.receipt, amount: Number(order.receipt.amount) } : null,
+      items: order.items.map((item) => ({ ...item, price: Number(item.price) })),
+    }));
+
+    return { success: true, data: serialized as AdminOrder[] };
+  } catch (error) {
+    console.error("getAdminOrders error:", error);
+    return { success: false, error: "Failed to fetch orders" };
+  }
+}
+
+export async function updateOrderStatus(
+  orderId: number,
+  status: $Enums.OrderStatus // <-- CHANGED from 'string'
+): Promise<ActionResult<boolean>> {
+  try {
+    await requireAdmin();
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
+    revalidatePath("/admin/orders");
+    return { success: true, data: true };
+  } catch (error) {
+    console.error("updateOrderStatus error:", error);
+    return { success: false, error: "Failed to update order status" };
+  }
+}
+
+// ─── ADMIN RECEIPT TYPES & ACTIONS ─────────────────────────────
+
+export type AdminReceipt = {
+  id: number;
+  reference: string;
+  bank: string;
+  payerName: string | null;
+  amount: number;
+  status: string;
+  createdAt: string;
+  order: { id: number; total: number; status: string } | null;
+  rawResponse: any;
+};
+
+export async function getAdminReceipts(query?: string): Promise<ActionResult<AdminReceipt[]>> {
+  try {
+    await requireAdmin();
+    const whereClause: any = {};
+    if (query) {
+      whereClause.OR = [
+        { reference: { contains: query, mode: "insensitive" } },
+        { payerName: { contains: query, mode: "insensitive" } },
+      ];
+    }
+
+    const receipts = await prisma.receipt.findMany({
+      where: whereClause,
+      include: {
+        order: { select: { id: true, total: true, status: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const serialized = receipts.map((r) => ({
+      ...r,
+      amount: Number(r.amount),
+      createdAt: r.createdAt.toISOString(),
+      order: r.order ? { ...r.order, total: Number(r.order.total) } : null,
+    }));
+
+    return { success: true, data: serialized as AdminReceipt[] };
+  } catch (error) {
+    console.error("getAdminReceipts error:", error);
+    return { success: false, error: "Failed to fetch receipts" };
   }
 }

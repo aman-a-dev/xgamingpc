@@ -8,7 +8,8 @@ import {
   Package,
   ShoppingCart,
   User,
-  BoxIcon
+  BoxIcon,
+  Newspaper
 } from "lucide-react";
 import {
   SidebarMenu,
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/orders", label: "Orders", icon: BoxIcon },
+  { href: "/admin/receipt", label: "Orders", icon: Newspaper },
   { href: "/admin/cart", label: "Carts", icon: ShoppingCart },
   { href: "/", label: "Switch to User", icon: User },
 ];
