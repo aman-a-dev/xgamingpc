@@ -1,0 +1,12 @@
+.next/dev/types/validator.ts(63,31): error TS2344: Type 'typeof import("/public/projects/shop/src/app/(admin)/admin/orders/page")' does not satisfy the constraint 'AppPageConfig<"/admin/orders">'.
+  Property 'default' is missing in type 'typeof import("/public/projects/shop/src/app/(admin)/admin/orders/page")' but required in type 'AppPageConfig<"/admin/orders">'.
+src/actions/order.ts(60,11): error TS2322: Type '"cbe " | "telebirr "' is not assignable to type '"cbe" | "telebirr"'.
+  Type '"cbe "' is not assignable to type '"cbe" | "telebirr"'. Did you mean '"cbe"'?
+src/actions/order.ts(161,44): error TS2304: Cannot find name 'ActionResult'.
+src/app/(main)/orders/page.tsx(109,20): error TS7006: Parameter 'order' implicitly has an 'any' type.
+src/app/(main)/orders/page.tsx(135,33): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/(main)/orders/page.tsx(135,39): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/blocks/checkout.tsx(117,34): error TS2322: Type '(v: "CBE" | "TELEBIRR") => void' is not assignable to type '(value: "CBE" | "TELEBIRR" | null, eventDetails: SelectRootChangeEventDetails) => void'.
+  Types of parameters 'v' and 'value' are incompatible.
+    Type '"CBE" | "TELEBIRR" | null' is not assignable to type '"CBE" | "TELEBIRR"'.
+      Type 'null' is not assignable to type '"CBE" | "TELEBIRR"'.

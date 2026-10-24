@@ -11,6 +11,7 @@ import {
   Headphones,
   Mail,
   Settings,
+  BoxIcon
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ export default function BottomNavWithFab() {
       href: "/cart",
       color: "text-primary"
     },
+
     {
       label: "Profile",
       icon: User,
@@ -46,8 +48,12 @@ export default function BottomNavWithFab() {
   ];
 
   const fabItems = [
+    {
+      label: "Orders",
+      icon: BoxIcon,
+      href: "/orders",
+    },
     { label: "Support", icon: Headphones, href: "https://t.me/Aman_a_dev" },
-    { label: "Contact", icon: Mail, href: "https://t.me/Aman_a_dev" },
     { label: "Admin", icon: Settings, href: "/admin" },
   ];
 

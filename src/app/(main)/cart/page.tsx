@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import { ShoppingCart, AlertCircle } from "lucide-react";
-import { getCart } from "@/actions/cart"; // now exported
+import { getCart } from "@/actions/cart";
 import { CartList } from "@/components/blocks/cart-list";
+import { CheckoutWrapper } from "@/components/blocks/checkout"; // <-- ADD THIS
 import {
   Empty,
   EmptyHeader,
@@ -10,13 +11,13 @@ import {
   EmptyMedia,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { formattedPrice } from "@/lib/utils";
 
 async function CartContent() {
   const result = await getCart();
-  const phoneNo = "251902991919";
+
   if (!result.success) {
     return (
       <Empty>
@@ -42,7 +43,7 @@ async function CartContent() {
           </EmptyMedia>
           <EmptyTitle>Your cart is empty</EmptyTitle>
           <EmptyDescription>
-            Looks like you haven&apos;t added anything to your cart yet.
+            Looks like you haven't added anything to your cart yet.
           </EmptyDescription>
         </EmptyHeader>
         <div className="flex justify-center mt-4">
@@ -54,7 +55,7 @@ async function CartContent() {
     );
   }
 
-  // Serialize Decimal to Number
+  // Serialize Decimal to Number for client-safe props
   const serializedItems = cart.items.map((item) => ({
     ...item,
     product: {
@@ -65,7 +66,7 @@ async function CartContent() {
 
   const total = serializedItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
-    0,
+    0
   );
 
   return (
@@ -77,14 +78,16 @@ async function CartContent() {
           <p className="text-sm text-muted-foreground">Total</p>
           <p className="text-2xl font-bold">{formattedPrice(total)}</p>
         </div>
-        <Button
-          render={<a href={`tel:${phoneNo}`} />}
-          size="lg"
-          className="w-full sm:w-auto"
-        >
-          Buy Now
-        </Button>
-        <p className="text-xs text-center">To buy call to {phoneNo} now.</p>
+
+        {/* <-- REPLACE THE OLD BUTTON WITH THIS WRAPPER --> */}
+        <CheckoutWrapper totalAmount={total} />
+
+        <p className="text-xs text-center">
+          Support available on{" "}
+          <a href="https://t.me/amanxhana" className="text-primary font-black">
+            X Gaming PC Support
+          </a>
+        </p>
       </div>
     </div>
   );
@@ -94,10 +97,7 @@ function CartSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg"
-        >
+        <div key={i} className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg">
           <Skeleton className="w-full sm:w-32 h-32 rounded-md" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-6 w-1/2" />

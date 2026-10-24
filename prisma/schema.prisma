@@ -25,6 +25,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   cart      Cart?   
+  orders    Order[]
 }
 
 enum Role {
@@ -42,7 +43,8 @@ model Product {
 
   images      Image[]
   cartItems   CartItem[]
-
+  orderItems OrderItem[]
+  
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -99,4 +101,84 @@ model CartItem {
   @@unique([cartId, productId]) 
   @@index([cartId])
   @@index([productId])
+}
+
+
+// ─── ORDER TABLES ──────────────────────────────────────────────
+
+model Order {
+  id          Int           @id @default(autoincrement())
+  userId      Int
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items       OrderItem[]
+  total       Decimal       @db.Decimal(10, 2)
+
+  status      OrderStatus   @default(PENDING_RECEIPT)
+
+  receiptId   Int?          @unique
+  receipt     Receipt?      @relation(fields: [receiptId], references: [id])
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING_RECEIPT   // created, waiting for user to submit receipt
+  VERIFYING         // receipt submitted, Check.et lookup in progress
+  VERIFIED          // receipt confirmed valid, ready to fulfill
+  REJECTED          // receipt failed verification (mismatch/fraud/reused)
+  FULFILLED         // delivered
+  CANCELLED
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+
+  quantity  Int      @default(1)
+  price     Decimal  @db.Decimal(10, 2) // snapshot — product.price can change later
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ─── RECEIPT VERIFICATION ──────────────────────────────────────
+
+model Receipt {
+  id              Int             @id @default(autoincrement())
+  order           Order?
+
+  reference       String          @unique
+  bank            BankProvider    @default(TELEBIRR)
+  payerName       String?
+  amount          Decimal         @db.Decimal(10, 2)
+  
+  status          VerificationStatus @default(PENDING)
+  rawResponse     Json?
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([status])
+}
+
+enum BankProvider {
+  CBE
+  TELEBIRR
+}
+
+enum VerificationStatus {
+  PENDING
+  VALID
+  INVALID
+  ALREADY_USED   // same reference reused on another order — important to check!
+  FAILED         // Check.et API error, not a verdict on the receipt itself
 }
