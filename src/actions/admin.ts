@@ -324,7 +324,7 @@ export async function updateOrderStatus(
       where: { id: orderId },
       data: { status },
     });
-    revalidatePath("/admin/order");
+    revalidatePath("/admin/orders");
     return { success: true, data: true };
   } catch (error) {
     console.error("updateOrderStatus error:", error);
