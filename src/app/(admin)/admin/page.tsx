@@ -119,7 +119,7 @@ export default function AdminDashboard() {
           title="Total Orders"
           value={stats.orders.toLocaleString()}
           icon={ShoppingBag}
-          href="/admin/orders"
+          href="/admin/order"
         />
         <StatCard
           title="Total Users"
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
           title="Total Receipts"
           value={stats.receipts.toLocaleString()}
           icon={Receipt}
-          href="/admin/receipts"
+          href="/admin/receipt"
         />
         <StatCard
           title="Total Carts"
