@@ -105,6 +105,7 @@ export function CheckoutDialog({ isOpen, onOpenChange, totalAmount }: CheckoutDi
           <DialogDescription>
             Verify your payment to finalize your purchase.
           </DialogDescription>
+          <GuideBtn />
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -209,16 +210,18 @@ export function CheckoutWrapper({ totalAmount }: CheckoutWrapperProps) {
       >
         Check Out
       </Button>
-      <a
-        href="https://t.me/amanxhana"
-        className={buttonVariants({
-          size: "lg",
-          variant: "outline"
-        })}
-      >
-        Order Manually
-      </a>
-      <GuideBtn />
+      <div className="flex items-center">
+        <a
+          href="https://t.me/amanxhana"
+          className={buttonVariants({
+            size: "lg",
+            variant: "outline"
+          })}
+        >
+          Order Manually
+        </a>
+        <GuideBtn />
+      </div >
       <CheckoutDialog
         isOpen={isCheckoutOpen}
         onOpenChange={setIsCheckoutOpen}

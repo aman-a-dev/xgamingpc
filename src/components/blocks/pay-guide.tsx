@@ -41,7 +41,7 @@ export function TelebirrGuide() {
       title: "Step 4: Enter Exact Amount",
       description: (
         <>
-          Insert the exact amount for your purchase. Inserting less or more amount will be registered and you need to contact admin{" "}
+          Insert the exact amount for your purchase. Inserting less or more amount will be rejected and you need to contact admin{" "}
           <a href="https://t.me/amanxhana" className="text-primary underline font-medium">
             Admin
           </a>
@@ -67,7 +67,7 @@ export function TelebirrGuide() {
                 <div className="flex flex-col items-center space-y-4 border rounded-lg p-4 bg-card text-card-foreground">
                   <div className="relative w-full h-64 bg-muted rounded-md overflow-hidden flex items-center justify-center">
                     <Image
-                      src={step.image}
+                      src={`/guide/${step.image}`}
                       alt={step.title}
                       width={300}
                       height={400}
@@ -98,7 +98,7 @@ export function CbeGuide() {
         <li className="pl-2">
           Insert the exact amount for your purchase.{" "}
           <span className="text-destructive font-medium">
-            Inserting less or more amount will be registered and you need to contact admin{" "}
+            Inserting less or more amount will be rejected and you need to contact admin{" "}
             <a href="https://t.me/amanxhana" className="text-primary underline font-medium">
               Admin
             </a>
