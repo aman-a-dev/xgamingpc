@@ -70,7 +70,7 @@ async function CartContent() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mb-20">
       <CartList initialItems={serializedItems} />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 border rounded-lg bg-card">
@@ -116,7 +116,7 @@ function CartSkeleton() {
 
 export default async function CartPage() {
   return (
-    <div className="container mx-auto py-8 max-w-4xl mb-20">
+    <div className="container mx-auto py-8 max-w-4xl">
       <h1 className="text-2xl font-bold mb-6 text-center">Shopping Cart</h1>
       <Suspense fallback={<CartSkeleton />}>
         <CartContent />

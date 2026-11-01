@@ -69,7 +69,7 @@ export function TelebirrGuide() {
                     <Image
                       src={`/guide/${step.image}`}
                       alt={step.title}
-                      width={300}
+                      width={200}
                       height={400}
                       className="object-contain max-h-full w-full"
                     />
