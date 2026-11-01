@@ -58,23 +58,24 @@ export function TelebirrGuide() {
 
   return (
     <div className="w-full">
-      <Carousel className="w-full" opts={{ align: "start" }}>
+      <Carousel className="w-full">
         <CarouselContent className="-ml-0">
           {steps.map((step, index) => (
-            <CarouselItem key={index} className="pl-0 md:basis-1/1">
-              <div className="flex flex-col items-center space-y-4 border rounded-lg p-4 bg-card text-card-foreground">
-                <div className="relative w-full h-64 bg-muted rounded-md overflow-hidden flex items-center justify-center">
+            <CarouselItem key={index} className="pl-0">
+              <div className="flex flex-col items-center space-y-3 p-2">
+                <div className="relative w-full max-w-[280px] h-80 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
                   <Image
                     src={`/guide/${step.image}`}
                     alt={step.title}
-                    width={250}
-                    height={500}
+                    width={280}
+                    height={560}
                     className="object-contain max-h-full w-auto"
+                    priority={index === 0}
                   />
                 </div>
-                <div className="space-y-2 text-center px-2">
-                  <h3 className="font-semibold text-base">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">{step.description}</p>
+                <div className="space-y-2 text-center px-2 w-full">
+                  <h3 className="font-semibold text-base leading-tight">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
                 </div>
               </div>
             </CarouselItem>
@@ -82,7 +83,7 @@ export function TelebirrGuide() {
         </CarouselContent>
 
         {/* Navigation buttons at the bottom */}
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex justify-center gap-3 mt-4 pb-2">
           <CarouselPrevious className="relative static transform-none" />
           <CarouselNext className="relative static transform-none" />
         </div>
@@ -135,7 +136,7 @@ export default function GuideBtn() {
           Payment Guide
         </Button>
       } />
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Payment Guide</DialogTitle>
           <DialogDescription>
