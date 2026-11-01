@@ -57,25 +57,25 @@ export function TelebirrGuide() {
   ]
 
   return (
-    <div className="w-full max-w-full overflow-hidden">
+    <div className="w-full overflow-hidden">
       <Carousel className="w-full">
         <CarouselContent className="-ml-0">
           {steps.map((step, index) => (
             <CarouselItem key={index} className="pl-0">
-              <div className="flex flex-col items-center space-y-3 p-2 w-full">
-                <div className="relative w-full max-w-[240px] h-72 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="flex flex-col items-center space-y-3 px-2">
+                <div className="relative w-full max-w-[200px] h-64 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
                   <Image
                     src={`/guide/${step.image}`}
                     alt={step.title}
-                    width={240}
-                    height={480}
+                    width={200}
+                    height={400}
                     className="object-contain max-h-full w-auto"
                     priority={index === 0}
                   />
                 </div>
-                <div className="space-y-2 text-center w-full px-2">
+                <div className="space-y-2 text-center w-full">
                   <h3 className="font-semibold text-sm leading-tight">{step.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{step.description}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed break-words">{step.description}</p>
                 </div>
               </div>
             </CarouselItem>
