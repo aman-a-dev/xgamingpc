@@ -1,5 +1,4 @@
 "use client";
-
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getAdminOrders, updateOrderStatus, type AdminOrder } from "@/actions/admin";
@@ -29,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toast";
-import { Loader2, Eye, Search } from "lucide-react";
+import { Loader2, Eye, Search, ShoppingBag } from "lucide-react";
 import { formattedPrice } from "@/lib/utils";
 
 // Define the exact union type for Order Status to satisfy TS and Server Action
@@ -68,6 +67,7 @@ function OrdersContent() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReceipt, setSelectedReceipt] = useState<AdminOrder["receipt"] | null>(null);
+  const [selectedOrderItems, setSelectedOrderItems] = useState<AdminOrder["items"] | null>(null);
   const [searchInput, setSearchInput] = useState(query);
 
   const fetchOrders = async (searchQuery?: string) => {
@@ -97,9 +97,7 @@ function OrdersContent() {
   };
 
   const handleStatusChange = async (orderId: number, newStatus: string) => {
-    // Cast to the exact union type expected by the server action to prevent TS errors
     const validStatus = newStatus as OrderStatusType;
-
     const result = await updateOrderStatus(orderId, validStatus);
     if (result.success) {
       toast.add({ type: "success", title: "Success", description: "Order status updated" });
@@ -137,6 +135,7 @@ function OrdersContent() {
               <TableHead>User</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Receipt</TableHead>
+              <TableHead>Items</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -144,13 +143,13 @@ function OrdersContent() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8">
                   <Loader2 className="mx-auto size-6 animate-spin" />
                 </TableCell>
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No orders found.
                 </TableCell>
               </TableRow>
@@ -182,12 +181,22 @@ function OrdersContent() {
                       <span className="text-xs text-muted-foreground">None</span>
                     )}
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-1 px-2"
+                      onClick={() => setSelectedOrderItems(order.items)}
+                    >
+                      <ShoppingBag className="size-3" />
+                      <span className="text-xs">{order.items.length} Items</span>
+                    </Button>
+                  </TableCell>
                   <TableCell>{getStatusBadge(order.status)}</TableCell>
                   <TableCell>
                     <Select
                       defaultValue={order.status}
                       onValueChange={(value) => {
-                        // Base UI Select can pass null, so we guard against it
                         if (value) {
                           handleStatusChange(order.id, value);
                         }
@@ -213,6 +222,7 @@ function OrdersContent() {
         </Table>
       </div>
 
+      {/* Receipt Details Dialog */}
       <Dialog open={!!selectedReceipt} onOpenChange={(open) => !open && setSelectedReceipt(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -239,6 +249,42 @@ function OrdersContent() {
                 <div className="text-sm font-medium text-muted-foreground">Verification Status</div>
                 <div className="text-base">{selectedReceipt.status}</div>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Order Items Dialog */}
+      <Dialog open={!!selectedOrderItems} onOpenChange={(open) => !open && setSelectedOrderItems(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Order Items</DialogTitle>
+            <DialogDescription>
+              Items included in this order.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedOrderItems && (
+            <div className="space-y-4 pt-2">
+              {selectedOrderItems.map((item) => (
+                <div key={item.id} className="flex gap-4 items-center border-b pb-4 last:border-0">
+                  {item.product.images?.[0] && (
+                    <img
+                      src={item.product.images[0].url}
+                      alt={item.product.name}
+                      className="w-16 h-16 object-cover rounded-md border"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <div className="font-medium">{item.product.name}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {item.quantity} x {formattedPrice(item.price)}
+                    </div>
+                  </div>
+                  <div className="font-medium">
+                    {formattedPrice(item.quantity * item.price)}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </DialogContent>

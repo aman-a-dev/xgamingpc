@@ -243,9 +243,6 @@ async function requireAdmin() {
 }
 
 // ─── ADMIN ORDER TYPES & ACTIONS ───────────────────────────────
-// ...
-// ─── ADMIN ORDER TYPES & ACTIONS ───────────────────────────────
-
 export type AdminOrder = {
   id: number;
   total: number;
@@ -264,7 +261,10 @@ export type AdminOrder = {
     id: number;
     quantity: number;
     price: number;
-    product: { name: string };
+    product: {
+      name: string;
+      images: { url: string }[];
+    };
   }[];
 };
 
@@ -286,7 +286,16 @@ export async function getAdminOrders(query?: string): Promise<ActionResult<Admin
       include: {
         user: { select: { id: true, name: true, telegramId: true } },
         receipt: { select: { id: true, reference: true, bank: true, amount: true, status: true, payerName: true } },
-        items: { include: { product: { select: { name: true } } } },
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                images: { take: 1, select: { url: true } } // Fetch 1 image for thumbnail
+              }
+            }
+          }
+        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -305,7 +314,6 @@ export async function getAdminOrders(query?: string): Promise<ActionResult<Admin
     return { success: false, error: "Failed to fetch orders" };
   }
 }
-
 export async function updateOrderStatus(
   orderId: number,
   status: $Enums.OrderStatus // <-- CHANGED from 'string'
@@ -370,3 +378,6 @@ export async function getAdminReceipts(query?: string): Promise<ActionResult<Adm
     return { success: false, error: "Failed to fetch receipts" };
   }
 }
+
+
+
