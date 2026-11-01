@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -58,33 +57,35 @@ export function TelebirrGuide() {
   ]
 
   return (
-    <div className="space-y-4">
-      <Carousel className="w-full max-w-sm mx-auto">
-        <CarouselContent>
+    <div className="w-full">
+      <Carousel className="w-full" opts={{ align: "start" }}>
+        <CarouselContent className="-ml-0">
           {steps.map((step, index) => (
-            <CarouselItem key={index}>
-              <div className="p-1">
-                <div className="flex flex-col items-center space-y-4 border rounded-lg p-4 bg-card text-card-foreground">
-                  <div className="relative w-[90%] h-64 bg-muted rounded-md overflow-hidden flex items-center justify-center">
-                    <Image
-                      src={`/guide/${step.image}`}
-                      alt={step.title}
-                      width={200}
-                      height={400}
-                      className="object-contain max-h-full w-full"
-                    />
-                  </div>
-                  <div className="space-y-2 text-center">
-                    <h3 className="font-semibold text-base">{step.title}</h3>
-                    <p className="text-sm text-muted-foreground">{step.description}</p>
-                  </div>
+            <CarouselItem key={index} className="pl-0 md:basis-1/1">
+              <div className="flex flex-col items-center space-y-4 border rounded-lg p-4 bg-card text-card-foreground">
+                <div className="relative w-full h-64 bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                  <Image
+                    src={`/guide/${step.image}`}
+                    alt={step.title}
+                    width={250}
+                    height={500}
+                    className="object-contain max-h-full w-auto"
+                  />
+                </div>
+                <div className="space-y-2 text-center px-2">
+                  <h3 className="font-semibold text-base">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground">{step.description}</p>
                 </div>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
+
+        {/* Navigation buttons at the bottom */}
+        <div className="flex justify-center gap-2 mt-4">
+          <CarouselPrevious className="relative static transform-none" />
+          <CarouselNext className="relative static transform-none" />
+        </div>
       </Carousel>
     </div>
   )
