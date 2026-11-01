@@ -61,6 +61,17 @@ export async function placeOrder(input: {
     // Map Prisma enum to check-et BankCode (REMOVED TRAILING SPACES)
     const apiBankCode: BankCode = input.bank === "CBE" ? "cbe" : "telebirr"; // <-- FIXED
 
+    /* const dbReceipts = prisma.receipt.findMany({
+       select: {
+         reference: true,
+       }
+     })
+     function isDuplicatedinDb(receipt:string){
+       const duplicated = dbReceipts.then((ref)=>{
+         
+       })
+     }*/
+
 
     const verifyResult = isUrl
       ? await verifyByReceiptUrl(input.receiptInput, input.accountNumber)

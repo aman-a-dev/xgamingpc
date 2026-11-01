@@ -6,7 +6,8 @@ import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { placeOrder } from "@/actions/order";
 import { formattedPrice } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button";
+import GuideBtn from "@/components/blocks/pay-guide";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -132,7 +133,7 @@ export function CheckoutDialog({ isOpen, onOpenChange, totalAmount }: CheckoutDi
               <Label htmlFor="accountNumber">Your CBE Account Number</Label>
               <Input
                 id="accountNumber"
-                placeholder="e.g., 1000123456789"
+                placeholder="e.g., 10000123456789"
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
                 disabled={isPending}
@@ -208,7 +209,16 @@ export function CheckoutWrapper({ totalAmount }: CheckoutWrapperProps) {
       >
         Check Out
       </Button>
-
+      <a
+        href="https://t.me/amanxhana"
+        className={buttonVariants({
+          size: "lg",
+          variant: "outline"
+        })}
+      >
+        Order Manually
+      </a>
+      <GuideBtn />
       <CheckoutDialog
         isOpen={isCheckoutOpen}
         onOpenChange={setIsCheckoutOpen}
@@ -217,3 +227,7 @@ export function CheckoutWrapper({ totalAmount }: CheckoutWrapperProps) {
     </>
   );
 }
+
+
+
+
