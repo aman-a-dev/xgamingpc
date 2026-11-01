@@ -6,67 +6,29 @@ import {
   getUsers,
   getAdminOrders,
   getAdminReceipts,
-  type AdminOrder,
-  type AdminReceipt,
 } from "@/actions/admin";
 import { getAllProductsAdmin } from "@/actions/products";
+import { getAllCarts } from "@/actions/cart";
 import {
   Loader2,
   Users,
   Package,
   ShoppingBag,
+  ShoppingCart,
   DollarSign,
   Clock,
   CheckCircle2,
   XCircle,
+  Receipt,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { formattedPrice } from "@/lib/utils";
-
-function getStatusBadge(status: string) {
-  switch (status) {
-    case "PENDING_RECEIPT":
-      return (
-        <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
-          Pending Receipt
-        </Badge>
-      );
-    case "VERIFYING":
-      return (
-        <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20">
-          Verifying
-        </Badge>
-      );
-    case "VERIFIED":
-      return (
-        <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
-          Verified
-        </Badge>
-      );
-    case "FULFILLED":
-      return <Badge className="bg-green-600 hover:bg-green-700">Fulfilled</Badge>;
-    case "REJECTED":
-      return <Badge variant="destructive">Rejected</Badge>;
-    case "CANCELLED":
-      return <Badge variant="secondary">Cancelled</Badge>;
-    default:
-      return <Badge variant="secondary">{status.replace("_", " ")}</Badge>;
-  }
-}
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     users: 0,
     products: 0,
+    carts: 0,
     orders: 0,
     receipts: 0,
     revenue: 0,
@@ -75,25 +37,29 @@ export default function AdminDashboard() {
     fulfilledOrders: 0,
     rejectedOrders: 0,
   });
-  const [recentOrders, setRecentOrders] = useState<AdminOrder[]>([]);
-  const [recentReceipts, setRecentReceipts] = useState<AdminReceipt[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [usersResult, productsResult, ordersResult, receiptsResult] =
-          await Promise.all([
-            getUsers(),
-            getAllProductsAdmin(),
-            getAdminOrders(),
-            getAdminReceipts(),
-          ]);
+        const [
+          usersResult,
+          productsResult,
+          cartsResult,
+          ordersResult,
+          receiptsResult,
+        ] = await Promise.all([
+          getUsers(),
+          getAllProductsAdmin(),
+          getAllCarts(),
+          getAdminOrders(),
+          getAdminReceipts(),
+        ]);
 
         const orders = ordersResult.success ? ordersResult.data : [];
         const receipts = receiptsResult.success ? receiptsResult.data : [];
 
-        // Revenue = sum of orders that have been verified or fulfilled
+        // Revenue = sum of orders that are VERIFIED or FULFILLED
         const revenue = orders
           .filter((o) => o.status === "VERIFIED" || o.status === "FULFILLED")
           .reduce((sum, o) => sum + Number(o.total), 0);
@@ -101,6 +67,7 @@ export default function AdminDashboard() {
         setStats({
           users: usersResult.success ? usersResult.data.length : 0,
           products: productsResult.success ? productsResult.data.length : 0,
+          carts: cartsResult.success ? cartsResult.data.length : 0,
           orders: orders.length,
           receipts: receipts.length,
           revenue,
@@ -113,9 +80,6 @@ export default function AdminDashboard() {
             (o) => o.status === "REJECTED" || o.status === "CANCELLED"
           ).length,
         });
-
-        setRecentOrders(orders.slice(0, 5));
-        setRecentReceipts(receipts.slice(0, 5));
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       }
@@ -149,10 +113,38 @@ export default function AdminDashboard() {
           value={formattedPrice(stats.revenue)}
           icon={DollarSign}
           accent="text-green-600"
+          href="/admin/orders"
         />
-        <StatCard title="Total Orders" value={stats.orders.toLocaleString()} icon={ShoppingBag} />
-        <StatCard title="Total Users" value={stats.users.toLocaleString()} icon={Users} />
-        <StatCard title="Total Products" value={stats.products.toLocaleString()} icon={Package} />
+        <StatCard
+          title="Total Orders"
+          value={stats.orders.toLocaleString()}
+          icon={ShoppingBag}
+          href="/admin/orders"
+        />
+        <StatCard
+          title="Total Users"
+          value={stats.users.toLocaleString()}
+          icon={Users}
+          href="/admin/users"
+        />
+        <StatCard
+          title="Total Products"
+          value={stats.products.toLocaleString()}
+          icon={Package}
+          href="/admin/products"
+        />
+        <StatCard
+          title="Total Receipts"
+          value={stats.receipts.toLocaleString()}
+          icon={Receipt}
+          href="/admin/receipts"
+        />
+        <StatCard
+          title="Total Carts"
+          value={stats.carts.toLocaleString()}
+          icon={ShoppingCart}
+          href="/admin/cart"
+        />
       </div>
 
       {/* Order status breakdown */}
@@ -166,113 +158,29 @@ export default function AdminDashboard() {
             value={stats.pendingOrders.toLocaleString()}
             icon={Clock}
             accent="text-yellow-600"
+            href="/admin/orders"
           />
           <StatCard
             title="Verified"
             value={stats.verifiedOrders.toLocaleString()}
             icon={CheckCircle2}
             accent="text-green-600"
+            href="/admin/orders"
           />
           <StatCard
             title="Fulfilled"
             value={stats.fulfilledOrders.toLocaleString()}
             icon={CheckCircle2}
             accent="text-emerald-600"
+            href="/admin/orders"
           />
           <StatCard
             title="Rejected / Cancelled"
             value={stats.rejectedOrders.toLocaleString()}
             icon={XCircle}
             accent="text-red-600"
+            href="/admin/orders"
           />
-        </div>
-      </div>
-
-      {/* Recent activity */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Orders */}
-        <div className="rounded-xl border bg-card shadow">
-          <div className="flex items-center justify-between border-b p-4">
-            <h2 className="font-semibold">Recent Orders</h2>
-            <Link href="/admin/orders" className="text-sm text-primary hover:underline">
-              View all
-            </Link>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Total</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentOrders.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="py-6 text-center text-muted-foreground">
-                    No orders yet
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recentOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-xs">#{order.id}</TableCell>
-                    <TableCell className="font-medium">{order.user.name}</TableCell>
-                    <TableCell>{formattedPrice(order.total)}</TableCell>
-                    <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Recent Receipts */}
-        <div className="rounded-xl border bg-card shadow">
-          <div className="flex items-center justify-between border-b p-4">
-            <h2 className="font-semibold">Recent Receipts</h2>
-            <Link href="/admin/receipts" className="text-sm text-primary hover:underline">
-              View all
-            </Link>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Reference</TableHead>
-                <TableHead>Payer</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentReceipts.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="py-6 text-center text-muted-foreground">
-                    No receipts yet
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recentReceipts.map((receipt) => (
-                  <TableRow key={receipt.id}>
-                    <TableCell
-                      className="max-w-[140px] truncate font-mono text-xs"
-                      title={receipt.reference}
-                    >
-                      {receipt.reference}
-                    </TableCell>
-                    <TableCell>{receipt.payerName || "Unknown"}</TableCell>
-                    <TableCell>{formattedPrice(receipt.amount)}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {receipt.status.toLowerCase().replace("_", " ")}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
         </div>
       </div>
     </div>
@@ -284,16 +192,26 @@ interface StatCardProps {
   value: string | number;
   icon?: React.ComponentType<{ className?: string }>;
   accent?: string;
+  href: string;
 }
 
-function StatCard({ title, value, icon: Icon, accent }: StatCardProps) {
+function StatCard({ title, value, icon: Icon, accent, href }: StatCardProps) {
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
+    <Link
+      href={href}
+      className="group rounded-xl border bg-card text-card-foreground shadow p-6 transition-colors hover:border-primary hover:bg-accent/40"
+    >
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-        {Icon && <Icon className={`size-4 ${accent ?? "text-muted-foreground"}`} />}
+        <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground">
+          {title}
+        </h3>
+        {Icon && (
+          <Icon
+            className={`size-4 ${accent ?? "text-muted-foreground"}`}
+          />
+        )}
       </div>
       <p className={`mt-2 text-2xl font-bold ${accent ?? ""}`}>{value}</p>
-    </div>
+    </Link>
   );
 }
