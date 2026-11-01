@@ -65,7 +65,7 @@ export function TelebirrGuide() {
             <CarouselItem key={index}>
               <div className="p-1">
                 <div className="flex flex-col items-center space-y-4 border rounded-lg p-4 bg-card text-card-foreground">
-                  <div className="relative w-full h-64 bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                  <div className="relative w-[90%] h-64 bg-muted rounded-md overflow-hidden flex items-center justify-center">
                     <Image
                       src={`/guide/${step.image}`}
                       alt={step.title}
