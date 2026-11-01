@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils"
 
 interface CheckoutDialogProps {
   isOpen: boolean;
@@ -210,18 +211,17 @@ export function CheckoutWrapper({ totalAmount }: CheckoutWrapperProps) {
       >
         Check Out
       </Button>
-      <div className="flex items-center">
-        <a
-          href="https://t.me/amanxhana"
-          className={buttonVariants({
-            size: "lg",
-            variant: "outline"
-          })}
-        >
-          Order Manually
-        </a>
-        <GuideBtn />
-      </div >
+      <a
+        href="https://t.me/amanxhana"
+        className={cn(buttonVariants({
+          size: "lg",
+          variant: "secondary"
+        }), "w-full sm:w-auto")}
+      >
+        Order Manually
+      </a>
+
+      <GuideBtn />
       <CheckoutDialog
         isOpen={isCheckoutOpen}
         onOpenChange={setIsCheckoutOpen}

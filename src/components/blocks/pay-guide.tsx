@@ -130,7 +130,7 @@ export default function GuideBtn() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={
-        <Button variant="outline" size="lg">
+        <Button variant="outline" size="lg" className="w-full sm:w-auto">
           Payment Guide
         </Button>
       } />
