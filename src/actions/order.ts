@@ -61,17 +61,6 @@ export async function placeOrder(input: {
     // Map Prisma enum to check-et BankCode (REMOVED TRAILING SPACES)
     const apiBankCode: BankCode = input.bank === "CBE" ? "cbe" : "telebirr"; // <-- FIXED
 
-    /* const dbReceipts = prisma.receipt.findMany({
-       select: {
-         reference: true,
-       }
-     })
-     function isDuplicatedinDb(receipt:string){
-       const duplicated = dbReceipts.then((ref)=>{
-         
-       })
-     }*/
-
 
     const verifyResult = isUrl
       ? await verifyByReceiptUrl(input.receiptInput, input.accountNumber)
@@ -90,52 +79,76 @@ export async function placeOrder(input: {
       return { success: false, error: "This receipt has already been used for another order." };
     }
 
-    /*const receiverName = (verifyResult.data.receipt.receiver_name || "").toLowerCase();
-    if (!receiverName.includes("amanuel")) {
-      return { success: false, error: "Verification failed: Receiver name must be 'Amanuel'." };
-    }*/
+    // 3b. Reject duplicates against our own DB too — don't just trust
+    // Check.et's `duplicate` flag, which only tracks what it has seen itself.
+    // `reference` (the bank transaction number) is already @unique, so this
+    // is a belt-and-suspenders check against the same column.
+    const existingReceipt = await prisma.receipt.findUnique({
+      where: { reference: verifyResult.data.transaction_number },
+      select: { id: true },
+    });
+    if (existingReceipt) {
+      return { success: false, error: "This receipt has already been used for another order." };
+    }
+
+    const receiverName = (verifyResult.data.receipt.receiver_name || "").toLowerCase();
+    if (!receiverName.includes("amanuael hailegeorges argaw")) {
+      // (was comparing a lowercased string against "Amanuael..." — always false)
+      return { success: false, error: "Verification failed: Receiver name must be 'Amanuael Hailegeorges Argaw'." };
+    }
 
     const paidAmount = Number(verifyResult.data.receipt.amount);
-    /* if (Math.abs(paidAmount - calculatedTotal) > 0.01) {
-       return { success: false, error: `Amount mismatch. Expected ${calculatedTotal} ETB, but receipt shows ${paidAmount} ETB.` };
-     }*/
+    if (Math.abs(paidAmount - calculatedTotal) > 0.01) {
+      return { success: false, error: `Amount mismatch. Expected ${calculatedTotal} ETB, but receipt shows ${paidAmount} ETB.` };
+    }
 
     // 4. Database Transaction: Create Receipt, Order, OrderItems, and Clear Cart
-    await prisma.$transaction(async (tx) => {
-      // Create Receipt record
-      const receipt = await tx.receipt.create({
-        data: {
-          reference: verifyResult.data.transaction_number,
-          bank: input.bank,
-          payerName: verifyResult.data.receipt.payer_name || "Unknown",
-          amount: paidAmount,
-          status: "VALID",
-          rawResponse: verifyResult as any,
-        },
-      });
-
-      // Create Order
-      await tx.order.create({
-        data: {
-          userId,
-          total: calculatedTotal,
-          status: "VERIFIED",
-          receiptId: receipt.id,
-          items: {
-            create: cart.items.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              price: item.product.price, // Snapshot of price
-            })),
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Create Receipt record. `reference` is @unique, so this throws
+        // (P2002) if two requests race past the check above with the same
+        // receipt at the same time.
+        const receipt = await tx.receipt.create({
+          data: {
+            reference: verifyResult.data.transaction_number,
+            bank: input.bank,
+            payerName: verifyResult.data.receipt.payer_name || "Unknown",
+            amount: paidAmount,
+            status: "VALID",
+            rawResponse: verifyResult as any,
           },
-        },
-      });
+        });
 
-      // Clear the user's cart
-      await tx.cartItem.deleteMany({
-        where: { cartId: cart.id },
+        // Create Order
+        await tx.order.create({
+          data: {
+            userId,
+            total: calculatedTotal,
+            status: "VERIFIED",
+            receiptId: receipt.id,
+            items: {
+              create: cart.items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                price: item.product.price, // Snapshot of price
+              })),
+            },
+          },
+        });
+
+        // Clear the user's cart
+        await tx.cartItem.deleteMany({
+          where: { cartId: cart.id },
+        });
       });
-    });
+    } catch (txError: any) {
+      if (txError?.code === "P2002") {
+        // Unique constraint hit on `reference` — someone else committed
+        // the same receipt a moment before us.
+        return { success: false, error: "This receipt has already been used for another order." };
+      }
+      throw txError;
+    }
 
     revalidatePath("/cart");
     revalidatePath("/orders");
